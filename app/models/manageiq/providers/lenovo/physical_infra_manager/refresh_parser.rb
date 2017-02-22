@@ -3,6 +3,25 @@ module ManageIQ::Providers::Lenovo
   class PhysicalInfraManager::RefreshParser < EmsRefresh::Parsers::Infra
     include ManageIQ::Providers::Lenovo::RefreshHelperMethods
 
+    POWER_STATE_MAP = {
+                      8 => "on",
+                      5 => "off",
+                      18 => "Standby",
+                      0 => "Unknown"
+    }
+
+    HEALTH_STATE = {
+      "normal"          => "Valid",
+      "non-critical"    => "Valid",
+      "warning"         => "Warning",
+      "critical"        => "Critical",
+      "unknown"         => "None",
+      "minor-failure"   => "Critical",
+      "major-failure"   => "Critical",
+      "non-recoverable" => "Critical",
+      "fatal"           => "Critical"
+    }
+
     def initialize(ems, options = nil)
       ems_auth = ems.authentications.first
 
@@ -52,7 +71,7 @@ module ManageIQ::Providers::Lenovo
 
         #TODO (walteraa) see how to save it using process_collection
         node["firmware"].map do |firmware|
-          
+
           f =   Firmware.new parse_firmware(firmware,node["uuid"])
           f.save!
         end
@@ -93,7 +112,9 @@ module ManageIQ::Providers::Lenovo
         :macAddresses   => node.macAddress.split(",").flatten,
         :ipv4Addresses  => node.ipv4Addresses.split.flatten,
         :ipv6Addresses  => node.ipv6Addresses.split.flatten,
-        :healthState   => node.cmmHealthState
+        :healthState    => HEALTH_STATE[node.cmmHealthState.downcase],
+        :powerState     => POWER_STATE_MAP[node.powerStatus.downcase],
+        :vendor         => "lenovo"
       }
       return node.uuid, new_result
     end
