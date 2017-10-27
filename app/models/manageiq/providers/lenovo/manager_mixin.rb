@@ -14,7 +14,7 @@ module ManageIQ::Providers::Lenovo::ManagerMixin
 
   def connect(options = {})
     # raise "no credentials defined" if missing_credentials?(options[:auth_type])
-
+    _log.info("LXCA")
     username   = options[:user] || authentication_userid(options[:auth_type])
     password   = options[:pass] || authentication_password(options[:auth_type])
     host       = options[:host] || address
@@ -27,9 +27,10 @@ module ManageIQ::Providers::Lenovo::ManagerMixin
   end
 
   def verify_credentials(auth_type = nil, options = {})
-    raise MiqException::MiqHostError, "No credentials defined" if missing_credentials?(auth_type)
-    options[:auth_type] = auth_type.nil? ? 'default' : auth_type.to_s
 
+    raise MiqException::MiqHostError, "No credentials defined" if missing_credentials?(auth_type)
+    # options[:auth_type] = auth_type.nil? ? 'default' : auth_type.to_s
+    options[:auth_type] = 'default'
     self.class.connection_rescue_block do
       with_provider_connection(options) do |lxca|
         self.class.validate_connection(lxca)

@@ -24,6 +24,8 @@ module ManageIQ::Providers::Lenovo
     }.freeze
 
     def initialize(ems, options = nil)
+      $log.info("aqui PROVIDER REFRESH PARSER ------ #{ems}. -------------- #{options}")
+
       ems_auth = ems.authentications.first
 
       @ems               = ems
